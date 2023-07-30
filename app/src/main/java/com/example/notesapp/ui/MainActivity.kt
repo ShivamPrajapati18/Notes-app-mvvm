@@ -1,10 +1,15 @@
 package com.example.notesapp.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.notesapp.R
 import com.example.notesapp.adapter.DeleteClickedInterface
 import com.example.notesapp.adapter.NoteClickedInterface
 import com.example.notesapp.adapter.NotesAdapter
@@ -22,6 +27,7 @@ class MainActivity : AppCompatActivity(), DeleteClickedInterface, NoteClickedInt
     lateinit var noteRepository: NoteRepository
     lateinit var noteDao: NoteDao
     lateinit var notesAdapter: NotesAdapter
+    lateinit var noteList: ArrayList<Notes>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
@@ -29,8 +35,9 @@ class MainActivity : AppCompatActivity(), DeleteClickedInterface, NoteClickedInt
 
         noteDao= NoteDatabase.getInstance(applicationContext).getNoteDao()
         noteRepository= NoteRepository(noteDao)
-        noteViewModel=ViewModelProvider(this, NoteViewModelFactory(noteRepository)).get(
-            NoteViewModel::class.java)
+        noteViewModel= ViewModelProvider(this, NoteViewModelFactory(noteRepository))[NoteViewModel::class.java]
+        noteList= ArrayList()
+        setSupportActionBar(binding.toolbar)
         /*Recycler View Implementation*/
         binding.noteRv.layoutManager=LinearLayoutManager(this)
         notesAdapter= NotesAdapter(this,this)
@@ -39,6 +46,7 @@ class MainActivity : AppCompatActivity(), DeleteClickedInterface, NoteClickedInt
         noteViewModel.getNote().observe(this) {
             it?.let {
                 notesAdapter.updateItem(it as ArrayList<Notes>)
+                noteList=it
             }
         }
         /*handling floating action button*/
@@ -48,6 +56,35 @@ class MainActivity : AppCompatActivity(), DeleteClickedInterface, NoteClickedInt
         }
 
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu,menu)
+        val menuItem= menu?.findItem(R.id.app_bar_search)
+        val searchView= menuItem?.actionView as SearchView
+        searchView.queryHint="Search Note"
+        searchView.setOnQueryTextListener(object :OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    filterData(it)
+                }
+                return true
+            }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let {
+                    filterData(it)
+                }
+                return true
+            }
+        })
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun filterData(text: String) {
+        val newNoteList= ArrayList(noteList.filter {
+                it.title.contains(text, true)
+            })
+        notesAdapter.filterData(newNoteList)
+        }
     /*deleting the node*/
     override fun deleteClicked(noteList: Notes) {
         noteViewModel.deleteNote(noteList)

@@ -10,7 +10,7 @@ import com.example.notesapp.model.Notes
 class NotesAdapter(private val listner1: NoteClickedInterface,
                    private val listner2: DeleteClickedInterface
 ): RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
-    private val noteList=ArrayList<Notes>()
+    private var noteList=ArrayList<Notes>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding=NoteRvSampleBinding.inflate(LayoutInflater.from(parent.context),parent,false)
         return ViewHolder(binding)
@@ -37,6 +37,11 @@ class NotesAdapter(private val listner1: NoteClickedInterface,
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun filterData(newNoteList:ArrayList<Notes>) {
+        noteList=newNoteList
+        notifyDataSetChanged()
+    }
     inner class ViewHolder(val binding: NoteRvSampleBinding): RecyclerView.ViewHolder(binding.root)
 }
 

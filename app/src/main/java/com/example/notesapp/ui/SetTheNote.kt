@@ -2,6 +2,8 @@ package com.example.notesapp.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.notesapp.database.NoteDatabase
@@ -38,7 +40,6 @@ class SetTheNote : AppCompatActivity() {
         }else{
             binding.button.text="Save Note"
         }
-
         binding.button.setOnClickListener {
             /* getting the data which user put on the edit text*/
             val noteTitle=binding.titletext.text.toString()
@@ -65,8 +66,7 @@ class SetTheNote : AppCompatActivity() {
                     val note = Notes(
                         title = noteTitle,
                         description = desc,
-                        timestamp = time
-                    )
+                        timestamp = time)
                     noteViewModel.insertNote(note)
                     Toast.makeText(this, "Insert Successfully", Toast.LENGTH_SHORT).show()
                     this.finish()
